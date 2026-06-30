@@ -28,26 +28,17 @@ jobs:
         run: |
           dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr
 
-      - name: Find Benchmark Reports
-        id: find_files
+      - name: Find Benchmark Reports2
+        id: find_files2
         run: |
-          PR_FILE=$(find . -path "./test/Saritasa.Tools.CodeAnalyzers.Benchmarks/artifacts-pr/*-report-full.json" | head -n 1)
+          PR_FILE=$(find ./artifacts-pr -name "*-report-full.json" | head -n 1)
+
+          echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
 
           echo "==== DEBUG: FOUND BENCHMARK FILES ===="
           echo "Found PR file path: $PR_FILE"
           echo "======================================"
-
-          echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
-
-      - name: Debug and Find All JSON Files
-        run: |
-          echo "=== Global Search for any report-full.json ==="
-          # This looks for the filename anywhere in the workspace and prints the exact path
-          find . -name "*report-full.json"
-
-          echo "=== Listing target folders manually ==="
-          # Let's inspect the contents of the benchmark folder
-          ls -R test/Saritasa.Tools.CodeAnalyzers.Benchmarks/ || true
+          
 
       - name: Verify Benchmark Files Exist
         run: |
