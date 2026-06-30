@@ -20,11 +20,11 @@ jobs:
         uses: actions/checkout@v4
     
       - name: Store and Compare Benchmark Result
-        uses: benchmark-action/github-action-benchmark@v1
+        uses: benchmark-action/github-action-benchmark@1.22.1
         with:
           tool: 'benchmarkdotnet'
-          output-file-path: './artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json'
-          external-data-json-path: './artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json'
+          output-file-path: 'artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json'
+          external-data-json-path: 'artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json'
           summary-always: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           save-data-file: false
