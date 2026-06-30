@@ -50,7 +50,6 @@ jobs:
       - name: Store and Compare Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: 'My .NET Project Benchmarks'
           tool: 'benchmarkdotnet'
           output-file-path: ${{ env.PR_REPORT_PATH }}
           external-data-json-path: ${{ env.BASE_REPORT_PATH }}
