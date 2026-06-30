@@ -27,42 +27,20 @@ jobs:
       - name: Run PR Benchmarks
         run: |
           dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr
-          
-      - name: Switch Library to Base Branch
-        run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
-          git status
-
-      - name: Run Base Benchmarks
-        run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-base
 
       - name: Find Benchmark Reports
         id: find_files
         run: |
-          PR_FILE=$(find . -path "test/Saritasa.Tools.CodeAnalyzers.Benchmarks/artifacts-pr/*-report-full.json" | head -n 1)
-          BASE_FILE=$(find . -path "test/Saritasa.Tools.CodeAnalyzers.Benchmarks/artifacts-base/*-report-full.json" | head -n 1)
+          PR_FILE=$(find . -path "./test/Saritasa.Tools.CodeAnalyzers.Benchmarks/artifacts-pr/*-report-full.json" | head -n 1)
 
           echo "==== DEBUG: FOUND BENCHMARK FILES ===="
           echo "Found PR file path: $PR_FILE"
-          echo "Found Base file path: $BASE_FILE"
           echo "======================================"
 
           echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
-          echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
 
       - name: Verify Benchmark Files Exist
         run: |
           echo "Discovered PR path: ${{ env.PR_REPORT_PATH }}"
-          echo "Discovered Base path: ${{ env.BASE_REPORT_PATH }}"
           ls -la "$(dirname "${{ env.PR_REPORT_PATH }}")"
-          ls -la "$(dirname "${{ env.BASE_REPORT_PATH }}")"
 
-      - name: Store and Compare Benchmark Result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          tool: 'benchmarkdotnet'
-          output-file-path: ${{ env.PR_REPORT_PATH }}
-          external-data-json-path: ${{ env.BASE_REPORT_PATH }}
-          summary-always: true
