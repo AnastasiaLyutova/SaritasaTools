@@ -41,16 +41,18 @@ jobs:
       - name: Find Benchmark Reports
         id: find_files
         run: |
-          PR_FILE=$(find ./artifacts-pr -name "*-report-full.json" | head -n 1)
-          BASE_FILE=$(find ./artifacts-base -name "*-report-full.json" | head -n 1)
+          PR_FILE=$(find . -path "*/artifacts-pr/*-report-full.json" | head -n 1)
+          BASE_FILE=$(find . -path "*/artifacts-base/*-report-full.json" | head -n 1)
 
           echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
           echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
 
       - name: Verify Benchmark Files Exist
         run: |
-          ls -la ./artifacts-pr/results/
-          ls -la ./artifacts-base/results/
+          echo "Discovered PR path: ${{ env.PR_REPORT_PATH }}"
+          echo "Discovered Base path: ${{ env.BASE_REPORT_PATH }}"
+          ls -la "$(dirname "${{ env.PR_REPORT_PATH }}")"
+          ls -la "$(dirname "${{ env.BASE_REPORT_PATH }}")"
 
       - name: Store and Compare Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
