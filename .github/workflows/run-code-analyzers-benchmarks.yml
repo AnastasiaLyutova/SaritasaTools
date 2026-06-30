@@ -47,9 +47,6 @@ jobs:
           echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
           echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
 
-      - name: Install Diff Tool
-        run: dotnet tool install -g dotnet-benchmark-diff
-
       - name: Store and Compare Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
