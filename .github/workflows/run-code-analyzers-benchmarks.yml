@@ -44,6 +44,11 @@ jobs:
           PR_FILE=$(find . -path "*/artifacts-pr/*-report-full.json" | head -n 1)
           BASE_FILE=$(find . -path "*/artifacts-base/*-report-full.json" | head -n 1)
 
+          echo "==== DEBUG: FOUND BENCHMARK FILES ===="
+          echo "Found PR file path: $PR_FILE"
+          echo "Found Base file path: $BASE_FILE"
+          echo "======================================"
+
           echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
           echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
 
