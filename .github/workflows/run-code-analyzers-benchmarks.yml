@@ -26,7 +26,7 @@ jobs:
 
       - name: Run PR Benchmarks
         run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr
+          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ../../artifacts-pr
           
       - name: Switch Library to Base Branch
         run: |
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Base Benchmarks
         run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-base
+          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ../../artifacts-base
 
       - name: Find Benchmark Reports
         id: find_files
