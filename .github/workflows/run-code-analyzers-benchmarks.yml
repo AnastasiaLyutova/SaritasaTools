@@ -38,9 +38,23 @@ jobs:
         run: |
           dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-base
 
+      - name: Find Benchmark Reports
+        id: find_files
+        run: |
+          PR_FILE=$(find ./artifacts-pr -name "*-report-full.json" | head -n 1)
+          BASE_FILE=$(find ./artifacts-base -name "*-report-full.json" | head -n 1)
+
+          echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
+          echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
+
       - name: Install Diff Tool
         run: dotnet tool install -g dotnet-benchmark-diff
 
-      - name: Compare Base vs PR
-        run: | 
-          benchmark-diff ./artifacts-base ./artifacts-pr
+      - name: Store and Compare Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: 'My .NET Project Benchmarks'
+          tool: 'benchmarkdotnet'
+          output-file-path: ${{ env.PR_REPORT_PATH }}
+          external-data-json-path: ${{ env.BASE_REPORT_PATH }}
+          summary-always: true
