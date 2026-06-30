@@ -78,6 +78,6 @@ public class CodeAnalyzersBenchmarks
             throw new DirectoryNotFoundException("Not.");
         }
 
-        return Path.Combine(rootPath, "src\\Saritasa.Tools.Domain\\Saritasa.Tools.Domain.csproj");
+        return Path.Combine(rootPath, "src", "Saritasa.Tools.Domain", "Saritasa.Tools.Domain.csproj");
     }
 }
