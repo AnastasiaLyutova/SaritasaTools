@@ -1,0 +1,45 @@
+name: Performance Comparison
+
+on:
+  pull_request:
+    branches:
+      - master
+
+    paths:
+      - 'src/Saritasa.Tools.CodeAnalyzers/**'
+  
+   # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  compare-performance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR Branch (Current Changes)
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run PR Benchmarks
+        run: |
+          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr
+          
+      - name: Switch Library to Base Branch
+        run: |
+          git checkout origin/${{ github.base_ref }} -- src/Saritasa.Tools.CodeAnalyzers/
+          git status
+
+      - name: Run Base Benchmarks
+        run: |
+          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-base
+
+      - name: Install Diff Tool
+        run: dotnet tool install -g dotnet-benchmark-diff
+
+      - name: Compare Base vs PR
+        run: | 
+          benchmark-diff ./artifacts-base ./artifacts-pr
