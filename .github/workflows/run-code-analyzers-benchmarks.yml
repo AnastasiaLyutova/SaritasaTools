@@ -47,6 +47,11 @@ jobs:
           echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
           echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
 
+      - name: Verify Benchmark Files Exist
+        run: |
+          ls -la ./artifacts-pr/results/
+          ls -la ./artifacts-base/results/
+
       - name: Store and Compare Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
