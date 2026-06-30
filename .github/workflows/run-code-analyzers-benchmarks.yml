@@ -18,47 +18,15 @@ jobs:
     steps:
       - name: Checkout PR Branch (Current Changes)
         uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Run PR Benchmarks
-        run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr --exporters json
-
-      - name: Switch Library to Base Branch
-        run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
-          git status
-
-      - name: Run Base Benchmarks
-        run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-base --exporters json
-
-      - name: Find Benchmark Reports2
-        id: find_files2
-        run: |
-          PR_FILE=$(find ./artifacts-pr -name "*.json" | head -n 1)
-          BASE_FILE=$(find ./artifacts-base -name "*.json" | head -n 1)
-
-          echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
-          echo "BASE_REPORT_PATH=$BASE_FILE" >> $GITHUB_ENV
-
-          echo "==== DEBUG: FOUND BENCHMARK FILES ===="
-          echo "Found PR file path: $PR_FILE"
-          echo "Found Base file path: $BASE_FILE"
-          echo "======================================"
     
       - name: Store and Compare Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'benchmarkdotnet'
-          output-file-path: ${{ env.PR_REPORT_PATH }}
-          external-data-json-path: ${{ env.BASE_REPORT_PATH }}
+          output-file-path: './artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json'
+          external-data-json-path: './artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json'
           summary-always: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          save-data-file: false
 
 
