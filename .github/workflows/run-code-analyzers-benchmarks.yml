@@ -39,8 +39,19 @@ jobs:
 
           echo "PR_REPORT_PATH=$PR_FILE" >> $GITHUB_ENV
 
+      - name: Debug and Find All JSON Files
+        run: |
+          echo "=== Global Search for any report-full.json ==="
+          # This looks for the filename anywhere in the workspace and prints the exact path
+          find . -name "*report-full.json"
+
+          echo "=== Listing target folders manually ==="
+          # Let's inspect the contents of the benchmark folder
+          ls -R test/Saritasa.Tools.CodeAnalyzers.Benchmarks/ || true
+
       - name: Verify Benchmark Files Exist
         run: |
           echo "Discovered PR path: ${{ env.PR_REPORT_PATH }}"
           ls -la "$(dirname "${{ env.PR_REPORT_PATH }}")"
+
 
