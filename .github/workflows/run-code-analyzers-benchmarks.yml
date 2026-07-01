@@ -27,17 +27,20 @@ jobs:
       - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
         run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
 
-      - name: 'Restore dependencies'
-        run: dotnet restore
-
       - name: 'Run benchmarks compare'
         run: pbreporter compare -b ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -t ./artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -f markdown
 
-      - name: Read file content
-        run: ls ./BenchmarkReporter
-
-      - name: Read file content
-        run: cat ./BenchmarkReporter/benchmark-comparison-report.md
+      - name: 'Publish benchmark report in Summary'
+        run: cat ./BenchmarkReporter/benchmark-comparison-report.md > $GITHUB_STEP_SUMMARY
+      
+      - name: 'Add compare benchmark report in PR Comment'
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: compare-benchmark-report
+          hide_and_recreate: true
+          hide_classify: "OUTDATED"
+          path: ./BenchmarkReporter/benchmark-comparison-report.md
         
 
 
