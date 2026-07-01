@@ -27,8 +27,12 @@ jobs:
           external-data-json-path: ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json
           summary-always: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          save-data-file: false
+          save-data-file: true
           comment-on-alert: true
+          comment-always: true
+
+      - name: Read file content
+        run: cat ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json
         
 
 
