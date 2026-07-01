@@ -41,11 +41,12 @@ jobs:
           fetch-depth: 1
 
       - name: Reset to specific commit
-        run: |
-          cd ${{ env.TEST_PROJECT_FOLDER }}
-          git fetch --depth=1 origin 771257af493247a2d43c6cf9de21156a6ad27021
-          git checkout FETCH_HEAD
-          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
+        uses: actions/checkout@v4
+        with:
+            repository: 'AnastasiaLyutova/saritasa-crm-slack-app'
+            token: ${{ secrets.YOUR_PERSONAL_ACCESS_TOKEN }}
+            ref: 771257af493247a2d43c6cf9de21156a6ad27021
+            path: ./testProject
 
       - name: LS
         run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
