@@ -28,5 +28,7 @@ jobs:
           summary-always: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           save-data-file: false
+          comment-on-alert: true
+        
 
 
