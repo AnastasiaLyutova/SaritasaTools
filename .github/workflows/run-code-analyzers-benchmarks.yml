@@ -18,6 +18,15 @@ jobs:
     steps:
       - name: Checkout PR Branch (Current Changes)
         uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run PR Benchmarks
+        run: |
+          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr --exporters json
     
       - name: Store and Compare Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1.22.1
