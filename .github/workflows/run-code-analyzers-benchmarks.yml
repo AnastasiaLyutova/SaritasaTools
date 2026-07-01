@@ -35,6 +35,9 @@ jobs:
 
       - name: Read file content
         run: ls ./BenchmarkReporter
+
+      - name: Read file content
+        run: cat ./BenchmarkReporter/benchmark-comparison-report.md
         
 
 
