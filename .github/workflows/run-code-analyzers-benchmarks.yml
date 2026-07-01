@@ -28,6 +28,9 @@ jobs:
     steps:
       - name: Clean up target directory
         run: rm -rf ${{ env.TEST_PROJECT_FOLDER }}
+   
+      - name: Checkout PR Branch (Current Changes)
+        uses: actions/checkout@v4
 
       - name: Checkout External Repository
         id: external_checkout
@@ -48,9 +51,6 @@ jobs:
             token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
             ref: 771257af493247a2d43c6cf9de21156a6ad27021
             path: ./testProject
-
-      - name: Checkout PR Branch (Current Changes)
-        uses: actions/checkout@v4
 
       - name: Run ls command
         run: ls -la
