@@ -11,6 +11,14 @@ on:
    # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  PATH_BENCHMARKS_PROJECT: 'test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj'
+  DIR_BASELINE_REPORTS: './artifacts-baseline'
+  DIR_TARGET_REPORTS: './artifacts-target'
+  PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
+  THRESHOLD_MEAN: 30%
+  THRESHOLD_ALLOCATION: 30%
+
 jobs:
   compare-performance:
     runs-on: ubuntu-latest
@@ -24,14 +32,28 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Run PR Benchmarks
+        run: |
+          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --exporters json
+
+      - name: Switch Library to Base Branch
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
+          git status
+
+      - name: Run Base Benchmarks
+        run: |
+          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --exporters json
+
       - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
         run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
 
       - name: 'Run benchmarks compare'
-        run: pbreporter compare -b ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -t ./artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -f markdown
+        run: pbreporter compare -b ${{ env.DIR_BASELINE_REPORTS }}/results -t ${{ env.DIR_TARGET_REPORTS }}/results -f markdown -tm ${{ env.THRESHOLD_MEAN }} -ta ${{ env.THRESHOLD_ALLOCATION }} -ft -fw
 
       - name: 'Publish benchmark report in Summary'
-        run: cat ./BenchmarkReporter/benchmark-comparison-report.md > $GITHUB_STEP_SUMMARY
+        run: cat ${{ env.PATH_REPORT_RESULT }} > $GITHUB_STEP_SUMMARY
       
       - name: 'Add compare benchmark report in PR Comment'
         uses: marocchino/sticky-pull-request-comment@v2
@@ -40,7 +62,7 @@ jobs:
           header: compare-benchmark-report
           hide_and_recreate: true
           hide_classify: "OUTDATED"
-          path: ./BenchmarkReporter/benchmark-comparison-report.md
+          path: ${{ env.PATH_REPORT_RESULT }}
         
 
 
