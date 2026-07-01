@@ -49,6 +49,9 @@ jobs:
             ref: 771257af493247a2d43c6cf9de21156a6ad27021
             path: ./testProject
 
+      - name: Checkout PR Branch (Current Changes)
+        uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -56,7 +59,7 @@ jobs:
 
       - name: Run PR Benchmarks
         run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
+          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
       - name: Switch Library to Base Branch
         run: |
