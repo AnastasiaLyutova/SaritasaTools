@@ -31,7 +31,7 @@ jobs:
         run: dotnet restore
 
       - name: 'Run benchmarks compare'
-        run: pbreporter compare -b ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -t ./artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -f markdown -f console
+        run: pbreporter compare -b ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -t ./artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -f markdown
 
       - name: Read file content
         run: ls ./BenchmarkReporter
