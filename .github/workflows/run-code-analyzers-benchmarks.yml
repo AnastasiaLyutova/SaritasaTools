@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  PATH_BENCHMARKS_PROJECT: './test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj'
+  PATH_BENCHMARKS_PROJECT: 'test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj'
   DIR_BASELINE_REPORTS: './artifacts-baseline'
   DIR_TARGET_REPORTS: './artifacts-target'
   PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
@@ -51,6 +51,15 @@ jobs:
 
       - name: Checkout PR Branch (Current Changes)
         uses: actions/checkout@v4
+
+      - name: Run ls command
+        run: ls -la
+
+      - name: Run ls command
+        run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
+
+      - name: Run ls command
+        run: ls -la ${{ env.TEST_PROJECT_FOLDER }}/src
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
