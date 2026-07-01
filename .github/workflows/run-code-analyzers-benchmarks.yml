@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  PATH_BENCHMARKS_PROJECT: 'test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj'
+  PATH_BENCHMARKS_PROJECT: './test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj'
   DIR_BASELINE_REPORTS: './artifacts-baseline'
   DIR_TARGET_REPORTS: './artifacts-target'
   PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
