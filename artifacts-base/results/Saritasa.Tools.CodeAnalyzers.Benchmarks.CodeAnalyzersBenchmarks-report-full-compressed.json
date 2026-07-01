@@ -1,0 +1,40 @@
+{
+  "lastUpdate": 1782899345900,
+  "repoUrl": "https://github.com/AnastasiaLyutova/SaritasaTools",
+  "entries": {
+    "Benchmark": [
+      {
+        "commit": {
+          "author": {
+            "name": "AnastasiaLyutova",
+            "username": "AnastasiaLyutova"
+          },
+          "committer": {
+            "name": "AnastasiaLyutova",
+            "username": "AnastasiaLyutova"
+          },
+          "id": "e815a4ff3d126a62c6d3e1c8cadc48dbd561eb54",
+          "message": "Feature/sn 959 create performance tests for analyzers",
+          "timestamp": "2026-06-30T08:33:49Z",
+          "url": "https://github.com/AnastasiaLyutova/SaritasaTools/pull/1/commits/e815a4ff3d126a62c6d3e1c8cadc48dbd561eb54"
+        },
+        "date": 1782899345899,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks.RunLineLengthAnalyzer",
+            "value": 3429243.0245535714,
+            "unit": "ns",
+            "range": "± 261066.1211200108"
+          },
+          {
+            "name": "Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks.RunExceptionMessageDotAnalyzer",
+            "value": 62274635.71428572,
+            "unit": "ns",
+            "range": "± 7998663.428253031"
+          }
+        ]
+      }
+    ]
+  }
+}
