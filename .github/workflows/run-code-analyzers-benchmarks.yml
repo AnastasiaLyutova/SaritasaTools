@@ -45,6 +45,7 @@ jobs:
           cd ${{ env.TEST_PROJECT_FOLDER }}
           git fetch --depth=1 origin 771257af493247a2d43c6cf9de21156a6ad27021
           git checkout FETCH_HEAD
+          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
 
       - name: LS
         run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
