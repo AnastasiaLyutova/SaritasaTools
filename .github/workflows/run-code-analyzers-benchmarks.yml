@@ -16,6 +16,7 @@ env:
   DIR_BASELINE_REPORTS: './artifacts-baseline'
   DIR_TARGET_REPORTS: './artifacts-target'
   PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
+  TEST_PROJECT_FOLDER: './testProject'
   THRESHOLD_MEAN: 30%
   THRESHOLD_ALLOCATION: 30%
 
@@ -24,45 +25,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout PR Branch (Current Changes)
+      - name: Checkout External Repository
+        id: external_checkout
         uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          repository: 'AnastasiaLyutova/saritasa-crm-slack-app'
+          ref: '771257a'
+          path: ${{ env.TEST_PROJECT_FOLDER }}
+          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }} 
 
-      - name: Run PR Benchmarks
-        run: |
-          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --exporters json
+      - name: LS
+        run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
 
-      - name: Switch Library to Base Branch
-        run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
-          git status
 
-      - name: Run Base Benchmarks
-        run: |
-          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --exporters json
-
-      - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
-        run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
-
-      - name: 'Run benchmarks compare'
-        run: pbreporter compare -b ${{ env.DIR_BASELINE_REPORTS }}/results -t ${{ env.DIR_TARGET_REPORTS }}/results -f markdown -tm ${{ env.THRESHOLD_MEAN }} -ta ${{ env.THRESHOLD_ALLOCATION }} -ft -fw
-
-      - name: 'Publish benchmark report in Summary'
-        run: cat ${{ env.PATH_REPORT_RESULT }} > $GITHUB_STEP_SUMMARY
-      
-      - name: 'Add compare benchmark report in PR Comment'
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          header: compare-benchmark-report
-          hide_and_recreate: true
-          hide_classify: "OUTDATED"
-          path: ${{ env.PATH_REPORT_RESULT }}
         
 
 

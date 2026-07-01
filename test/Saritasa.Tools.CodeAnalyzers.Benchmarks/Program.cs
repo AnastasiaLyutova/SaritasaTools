@@ -35,8 +35,9 @@ internal class Program
                 .WithIterationCount(15))
             .AddLogger(ConsoleLogger.Default)
             .WithOption(ConfigOptions.DisableLogFile, true)
+            .AddExporter(JsonExporter.BriefCompressed)
             .AddColumnProvider(DefaultColumnProviders.Instance);
 
-        var a = BenchmarkRunner.Run<CodeAnalyzersBenchmarks>(config, args);
+        BenchmarkRunner.Run<CodeAnalyzersBenchmarks>(config, args);
     }
 }
