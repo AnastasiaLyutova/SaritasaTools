@@ -32,7 +32,8 @@ jobs:
           repository: 'AnastasiaLyutova/saritasa-crm-slack-app'
           ref: '771257a'
           path: ${{ env.TEST_PROJECT_FOLDER }}
-          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }} 
+          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
+          persist-credentials: false  
 
       - name: LS
         run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
