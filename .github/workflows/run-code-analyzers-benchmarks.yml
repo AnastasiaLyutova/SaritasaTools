@@ -24,24 +24,17 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Run PR Benchmarks
-        run: |
-          dotnet run -c Release --project test/Saritasa.Tools.CodeAnalyzers.Benchmarks/Saritasa.Tools.CodeAnalyzers.Benchmarks.csproj -- --artifacts ./artifacts-pr --exporters json
-    
-      - name: Store and Compare Benchmark Result
-        uses: benchmark-action/github-action-benchmark@v1.22.1
-        with:
-          tool: 'benchmarkdotnet'
-          output-file-path: ./artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json
-          external-data-json-path: ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json
-          summary-always: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          save-data-file: true
-          comment-on-alert: true
-          comment-always: true
+      - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
+        run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
+
+      - name: 'Restore dependencies'
+        run: dotnet restore
+
+      - name: 'Run benchmarks compare'
+        run: pbreporter compare -b ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -t ./artifacts-pr/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json -f markdown -f console
 
       - name: Read file content
-        run: cat ./artifacts-base/results/Saritasa.Tools.CodeAnalyzers.Benchmarks.CodeAnalyzersBenchmarks-report-full-compressed.json
+        run: ls ./BenchmarkReporter
         
 
 
