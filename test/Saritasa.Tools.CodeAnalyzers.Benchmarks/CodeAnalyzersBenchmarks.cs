@@ -13,6 +13,7 @@ namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
 /// <summary>
 /// 
 /// </summary>
+[MemoryDiagnoser]
 public class CodeAnalyzersBenchmarks
 {
     private static readonly List<Compilation> _compilations = new();
