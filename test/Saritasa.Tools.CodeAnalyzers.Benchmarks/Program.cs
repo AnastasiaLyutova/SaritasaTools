@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.CommandLine;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters.Json;
@@ -7,11 +7,6 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 using Microsoft.Build.Locator;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.Extensions.Options;
-using Saritasa.Tools.CodeAnalyzers.Analyzers;
 
 namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
 
@@ -20,24 +15,50 @@ namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
 /// </summary>
 internal class Program
 {
+    // Static state to temporarily hold parsed values
+    public static string File { get; private set; } = string.Empty;
+
     /// <summary>
     /// Entry point.
     /// </summary>
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
-        MSBuildLocator.RegisterDefaults();
+        Option<string> fileOption = new("--test")
+        {
+            Description = "The file to read and display on the console"
+        };
 
-        var config = ManualConfig.CreateEmpty()
-            .AddJob(Job.Default
-                .WithToolchain(InProcessEmitToolchain.Instance)
-                .WithLaunchCount(1)
-                .WithWarmupCount(1)
-                .WithIterationCount(15))
-            .AddLogger(ConsoleLogger.Default)
-            .WithOption(ConfigOptions.DisableLogFile, true)
-            .AddExporter(JsonExporter.BriefCompressed)
-            .AddColumnProvider(DefaultColumnProviders.Instance);
+        var rootCommand = new RootCommand();
+        rootCommand.Options.Add(fileOption);
+        rootCommand.TreatUnmatchedTokensAsErrors = false;
 
-        BenchmarkRunner.Run<CodeAnalyzersBenchmarks>(config, args);
+        var parseResult = rootCommand.Parse(args);
+        if (parseResult.Errors.Count == 0 && parseResult.GetValue(fileOption) is string parsedFile)
+        {
+            File = parsedFile;
+
+            MSBuildLocator.RegisterDefaults();
+
+            var config = ManualConfig.CreateEmpty()
+                .AddJob(Job.Default
+                    .WithToolchain(InProcessEmitToolchain.Instance)
+                    .WithLaunchCount(1)
+                    .WithWarmupCount(1)
+                    .WithIterationCount(15))
+                .AddLogger(ConsoleLogger.Default)
+                .WithOption(ConfigOptions.DisableLogFile, true)
+                .AddExporter(JsonExporter.BriefCompressed)
+                .AddColumnProvider(DefaultColumnProviders.Instance);
+
+            BenchmarkRunner.Run<CodeAnalyzersBenchmarks>(config, parseResult.UnmatchedTokens.ToArray());
+            return 0;
+        }
+
+        foreach (var parseError in parseResult.Errors)
+        {
+            Console.Error.WriteLine(parseError.Message);
+        }
+
+        return 1;
     }
 }

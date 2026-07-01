@@ -17,6 +17,7 @@ env:
   DIR_TARGET_REPORTS: './artifacts-target'
   PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
   TEST_PROJECT_FOLDER: './testProject'
+  PATH_TO_TEST_SOLUTION: 'src/Saritasa.SlackApp.sln'
   THRESHOLD_MEAN: 30%
   THRESHOLD_ALLOCATION: 30%
 
@@ -48,8 +49,42 @@ jobs:
             ref: 771257af493247a2d43c6cf9de21156a6ad27021
             path: ./testProject
 
-      - name: LS
-        run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run PR Benchmarks
+        run: |
+          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
+
+      - name: Switch Library to Base Branch
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
+          git status
+
+      - name: Run Base Benchmarks
+        run: |
+          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
+
+      - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
+        run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
+
+      - name: 'Run benchmarks compare'
+        run: pbreporter compare -b ${{ env.DIR_BASELINE_REPORTS }}/results -t ${{ env.DIR_TARGET_REPORTS }}/results -f markdown -tm ${{ env.THRESHOLD_MEAN }} -ta ${{ env.THRESHOLD_ALLOCATION }} -ft -fw
+
+      - name: 'Publish benchmark report in Summary'
+        run: cat ${{ env.PATH_REPORT_RESULT }} > $GITHUB_STEP_SUMMARY
+      
+      - name: 'Add compare benchmark report in PR Comment'
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: compare-benchmark-report
+          hide_and_recreate: true
+          hide_classify: "OUTDATED"
+          path: ${{ env.PATH_REPORT_RESULT }}
 
 
         
