@@ -41,7 +41,8 @@ internal class Program
             MSBuildLocator.RegisterDefaults();
 
             var config = ManualConfig.CreateEmpty()
-                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
+                .AddJob(Job.Default
+                    .WithToolchain(InProcessEmitToolchain.Instance))
                     .WithOption(ConfigOptions.DisableOptimizationsValidator, true)
                     .WithOption(ConfigOptions.StopOnFirstError, true)
                 .AddLogger(ConsoleLogger.Default)

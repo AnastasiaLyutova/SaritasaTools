@@ -50,21 +50,15 @@ jobs:
             repository: 'AnastasiaLyutova/saritasa-crm-slack-app'
             token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
             ref: 771257af493247a2d43c6cf9de21156a6ad27021
-            path: ./testProject
-
-      - name: Run ls command
-        run: ls -la
-
-      - name: Run ls command
-        run: ls -la ${{ env.TEST_PROJECT_FOLDER }}
-
-      - name: Run ls command
-        run: ls -la ${{ env.TEST_PROJECT_FOLDER }}/src
+            path: ${{ env.TEST_PROJECT_FOLDER }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Grant process priority capability to dotnet
+        run: sudo setcap cap_sys_nice+ep $(which dotnet)
 
       - name: Run PR Benchmarks
         run: |
@@ -97,8 +91,3 @@ jobs:
           hide_and_recreate: true
           hide_classify: "OUTDATED"
           path: ${{ env.PATH_REPORT_RESULT }}
-
-
-        
-
-
