@@ -57,12 +57,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Grant process priority capability to dotnet
-        run: sudo setcap cap_sys_nice+ep $(which dotnet)
-
       - name: Run PR Benchmarks
         run: |
-          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
+          sudo -E dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
       - name: Switch Library to Base Branch
         run: |
@@ -72,7 +69,7 @@ jobs:
 
       - name: Run Base Benchmarks
         run: |
-          dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
+          sudo -E dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
       - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
         run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
