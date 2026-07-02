@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
@@ -40,13 +41,12 @@ internal class Program
             MSBuildLocator.RegisterDefaults();
 
             var config = ManualConfig.CreateEmpty()
-                .AddJob(Job.Default
-                    .WithToolchain(InProcessEmitToolchain.Instance)
-                    .WithLaunchCount(1)
-                    .WithWarmupCount(1)
-                    .WithIterationCount(15))
+                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
+                    .WithOption(ConfigOptions.DisableOptimizationsValidator, true)
+                    .WithOption(ConfigOptions.StopOnFirstError, true)
                 .AddLogger(ConsoleLogger.Default)
-                .WithOption(ConfigOptions.DisableLogFile, true)
+                    .WithOption(ConfigOptions.DisableLogFile, true)
+                .AddDiagnoser(MemoryDiagnoser.Default)
                 .AddExporter(JsonExporter.BriefCompressed)
                 .AddColumnProvider(DefaultColumnProviders.Instance);
 

@@ -10,10 +10,14 @@ namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
 /// <summary>
 /// 
 /// </summary>
-[MemoryDiagnoser]
 public class CodeAnalyzersBenchmarks
 {
-    private static readonly List<Compilation> _compilations = new();
+    private static readonly List<Compilation> compilations = new();
+
+    private static readonly DiagnosticAnalyzer lineLengthAnalyzer = new LineLengthAnalyzer();
+    private static readonly DiagnosticAnalyzer exceptionMessageDotAnalyzer = new ExceptionMessageDotAnalyzer();
+    private static readonly DiagnosticAnalyzer requestHandlersAnalyzer = new RequestHandlersAnalyzer();
+    private static readonly DiagnosticAnalyzer singularTypeNameAnalyzer = new SingularTypeNameAnalyzer();
 
     static CodeAnalyzersBenchmarks()
     {
@@ -23,10 +27,6 @@ public class CodeAnalyzersBenchmarks
 
         var solution = workspace.OpenSolutionAsync(Program.File).GetAwaiter().GetResult();
 
-        var analyzer1 = new ExceptionMessageDotAnalyzer();
-        var analyzer2 = new LineLengthAnalyzer();
-        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(analyzer1, analyzer2);
-
         foreach (var project in solution.Projects)
         {
             var compilation = project.GetCompilationAsync().GetAwaiter().GetResult();
@@ -34,33 +34,65 @@ public class CodeAnalyzersBenchmarks
             {
                 continue;
             }
-            _compilations.Add(compilation);
+            compilations.Add(compilation);
         }
 
-        foreach (var c in _compilations)
+        var analyzers = ImmutableArray.Create(
+            lineLengthAnalyzer,
+            exceptionMessageDotAnalyzer,
+            requestHandlersAnalyzer,
+            singularTypeNameAnalyzer);
+
+        foreach (var analyzer in analyzers)
         {
-            var compilationWithAnalyzers = c.WithAnalyzers(analyzers);
-            _ = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult();
+            foreach (var compilation in compilations)
+            {
+                var compilationWithAnalyzers = compilation.WithAnalyzers([analyzer]);
+                _ = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult();
+            }
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Benchmark]
     public async Task RunLineLengthAnalyzer()
     {
-        foreach (var compilation in _compilations)
-        {
-            var analyzer = (DiagnosticAnalyzer)Activator.CreateInstance(typeof(LineLengthAnalyzer));
-            var compilationWithAnalyzers = compilation.WithAnalyzers([analyzer]);
-            _ = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
-        }
+        await RunAnalyzer(lineLengthAnalyzer);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Benchmark]
     public async Task RunExceptionMessageDotAnalyzer()
     {
-        foreach (var compilation in _compilations)
+        await RunAnalyzer(exceptionMessageDotAnalyzer);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Benchmark]
+    public async Task RunRequestHandlersAnalyzer()
+    {
+        await RunAnalyzer(requestHandlersAnalyzer);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Benchmark]
+    public async Task RunSingularTypeNameAnalyzer()
+    {
+        await RunAnalyzer(singularTypeNameAnalyzer);
+    }
+
+    private async Task RunAnalyzer(DiagnosticAnalyzer analyzer)
+    {
+        foreach (var compilation in compilations)
         {
-            var analyzer = (DiagnosticAnalyzer)Activator.CreateInstance(typeof(ExceptionMessageDotAnalyzer));
             var compilationWithAnalyzers = compilation.WithAnalyzers([analyzer]);
             _ = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
         }
