@@ -9,8 +9,74 @@ namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
 
 /// <summary>
 /// Benchmarks for Roslyn diagnostic analyzers.
+/// Analyzers are discovered dynamically via reflection from Saritasa.Tools.CodeAnalyzers assembly,
+/// so no changes to this file are needed when a new analyzer is added.
 /// </summary>
 public class CodeAnalyzersBenchmarks
+{
+    private static readonly List<Compilation> compilations = new();
+
+    /// <summary>
+    /// Discovered at startup via reflection so that new analyzers are benchmarked automatically.
+    /// Using typeof(LineLengthAnalyzer) only to resolve the target assembly — no other types
+    /// are referenced directly, so this file compiles on any branch regardless of which
+    /// analyzers exist there.
+    /// </summary>
+    public static IEnumerable<DiagnosticAnalyzer> AnalyzerSource { get; } =
+        typeof(LineLengthAnalyzer).Assembly
+            .GetTypes()
+            .Where(t => !t.IsAbstract && typeof(DiagnosticAnalyzer).IsAssignableFrom(t))
+            .Select(t => (DiagnosticAnalyzer)Activator.CreateInstance(t)!)
+            .ToList();
+
+    static CodeAnalyzersBenchmarks()
+    {
+        using var workspace = MSBuildWorkspace.Create();
+
+        workspace.WorkspaceFailed += (sender, args) => Console.WriteLine($"[MSBuild Error] {args.Diagnostic.Message}");
+
+        var solution = workspace.OpenSolutionAsync(CodeAnalyzersBenchmarkSettings.TestProjectPath).GetAwaiter().GetResult();
+
+        foreach (var project in solution.Projects)
+        {
+            var compilation = project.GetCompilationAsync().GetAwaiter().GetResult();
+            if (compilation == null)
+            {
+                continue;
+            }
+            compilations.Add(compilation);
+        }
+
+        // Warm up each analyzer individually to JIT-compile the single-analyzer execution path
+        // in Roslyn, which differs from the multi-analyzer path used when running all at once.
+        // foreach (var analyzer in AnalyzerSource)
+        // {
+           //  RunAnalyzer(analyzer).GetAwaiter().GetResult();
+       //  }
+    }
+
+    /// <summary>
+    /// Runs a single analyzer against all compiled projects.
+    /// BenchmarkDotNet generates one benchmark case per analyzer found in AnalyzerSource.
+    /// </summary>
+    [Benchmark]
+    [ArgumentsSource(nameof(AnalyzerSource))]
+    public async Task RunAnalyzer(DiagnosticAnalyzer analyzer)
+    {
+        foreach (var compilation in compilations)
+        {
+            // A new instance must be created each iteration: CompilationWithAnalyzers caches
+            // results internally, so reusing it would measure cache retrieval, not actual analysis.
+            var compilationWithAnalyzers = compilation.WithAnalyzers([analyzer]);
+            _ = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
+        }
+    }
+}
+
+/// <summary>
+/// Benchmarks for Roslyn diagnostic analyzers.
+/// </summary>
+public class CodeAnalyzersBenchmarks1
 {
     private static readonly List<Compilation> compilations = new();
 
@@ -18,6 +84,7 @@ public class CodeAnalyzersBenchmarks
     private static readonly ExceptionMessageDotAnalyzer exceptionMessageDotAnalyzer = new();
     private static readonly RequestHandlersAnalyzer requestHandlersAnalyzer = new();
     private static readonly SingularTypeNameAnalyzer singularTypeNameAnalyzer = new();
+    private static readonly EarlyExitAnalyzer earlyExitAnalyzer = new();
 
     private static readonly ImmutableArray<DiagnosticAnalyzer> analyzers =
     [
@@ -27,7 +94,7 @@ public class CodeAnalyzersBenchmarks
         singularTypeNameAnalyzer
     ];
 
-    static CodeAnalyzersBenchmarks()
+    static CodeAnalyzersBenchmarks1()
     {
         using var workspace = MSBuildWorkspace.Create();
 
@@ -87,6 +154,15 @@ public class CodeAnalyzersBenchmarks
     public async Task RunSingularTypeNameAnalyzer()
     {
         await RunAnalyzer(singularTypeNameAnalyzer);
+    }
+
+    /// <summary>
+    /// Run singular type name analyzer.
+    /// </summary>
+    [Benchmark]
+    public async Task RunEarlyExitAnalyzer()
+    {
+        await RunAnalyzer(earlyExitAnalyzer);
     }
 
     private static async Task RunAnalyzer(DiagnosticAnalyzer analyzer)

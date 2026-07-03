@@ -23,7 +23,8 @@ internal class Program
     {
         var testProjectPathOption = new Option<string>("--testProjectPath")
         {
-            Description = "Path to the test project for code analyzer benchmarks."
+            Description = "Path to the test project for code analyzer benchmarks.",
+            Required = true
         };
 
         var rootCommand = new RootCommand();
@@ -38,9 +39,12 @@ internal class Program
             MSBuildLocator.RegisterDefaults();
 
             var config = ManualConfig.CreateEmpty()
+                // InProcess is required because MSBuildLocator.RegisterDefaults() registers an
+                // assembly resolver in the current AppDomain. The default out-of-process toolchain
+                // spawns a child process with a BenchmarkDotNet-generated Main that never calls
+                // MSBuildLocator, so MSBuild assemblies cannot be resolved.
                 .AddJob(Job.Default
                     .WithToolchain(InProcessEmitToolchain.Instance))
-                    .WithOption(ConfigOptions.DisableOptimizationsValidator, true)
                     .WithOption(ConfigOptions.StopOnFirstError, true)
                 .AddLogger(ConsoleLogger.Default)
                     .WithOption(ConfigOptions.DisableLogFile, true)

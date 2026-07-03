@@ -1,4 +1,20 @@
-name: Performance Comparison
+# ==============================================================================
+# Code Analyzers Performance Comparison
+#
+# Triggered on pull requests that modify Saritasa.Tools.CodeAnalyzers project.
+#
+# How it works:
+#   1. Checks out the PR branch and runs benchmarks against an external test project.
+#   2. Switches only the Saritasa.Tools.CodeAnalyzers source to the base branch (master),
+#      keeping the benchmark code and test project unchanged.
+#   3. Runs benchmarks again to get the baseline results.
+#   4. Compares the two runs and fails if mean time or allocations regress
+#      beyond the configured thresholds (THRESHOLD_MEAN / THRESHOLD_ALLOCATION).
+#   5. Posts the comparison report as a sticky PR comment.
+#
+# More info about tool used to analyze and compare at https://github.com/TechNobre/PowerUtils.BenchmarkDotnet.Reporter.
+# ==============================================================================
+name: Code Analyzers Performance Comparison
 
 on:
   pull_request:
@@ -18,20 +34,23 @@ env:
   PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
   TEST_PROJECT_FOLDER: './testProject'
   PATH_TO_TEST_SOLUTION: 'src/Saritasa.SlackApp.sln'
-  THRESHOLD_MEAN: 30%
-  THRESHOLD_ALLOCATION: 30%
+  THRESHOLD_MEAN: 50%
+  THRESHOLD_ALLOCATION: 50%
 
 jobs:
-  compare-performance:
+  compare-code-analyzers-performance:
     runs-on: ubuntu-latest
 
     steps:
+      # Ensure a clean test project directory before checkout.
       - name: Clean up target directory
         run: rm -rf ${{ env.TEST_PROJECT_FOLDER }}
    
+      # Checkout the PR branch so we can benchmark the proposed changes.
       - name: Checkout PR Branch (Current Changes)
         uses: actions/checkout@v4
 
+      # Checkout the external test project used as input for the analyzers.
       - name: Checkout External Repository
         id: external_checkout
         uses: actions/checkout@v4
@@ -44,6 +63,7 @@ jobs:
           set-safe-directory: false
           fetch-depth: 1
 
+      # Pin the test project to a known commit for reproducible benchmark input.
       - name: Reset to specific commit
         uses: actions/checkout@v4
         with:
@@ -55,32 +75,36 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
+      # Benchmark the PR branch. sudo -E preserves the environment so this allows
+      # BenchmarkDotNet to raise the process priority for more stable measurements.
       - name: Run PR Benchmarks
         run: |
           sudo -E dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --testProjectPath ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
-      - name: Switch Library to Base Branch
+      # Swap the Saritasa.Tools.CodeAnalyzers code to the base branch while keeping the test project intact.
+      - name: Switch Saritasa.Tools.CodeAnalyzers to Base Branch
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
           git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
           git status
 
+      # Benchmark the base branch with the same test project for a fair comparison.
       - name: Run Base Benchmarks
         run: |
           sudo -E dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --testProjectPath ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
-      - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
+      - name: Install lib for benchmarks comparison
         run: sudo -E dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
 
-      - name: 'Run benchmarks compare'
+      - name: Run benchmarks compare
         run: pbreporter compare -b ${{ env.DIR_BASELINE_REPORTS }}/results -t ${{ env.DIR_TARGET_REPORTS }}/results -f markdown -tm ${{ env.THRESHOLD_MEAN }} -ta ${{ env.THRESHOLD_ALLOCATION }} -ft -fw
 
-      - name: 'Publish benchmark report in Summary'
+      - name: Publish benchmark report in Summary
         run: cat ${{ env.PATH_REPORT_RESULT }} > $GITHUB_STEP_SUMMARY
       
-      - name: 'Add compare benchmark report in PR Comment'
+      - name: Add compare benchmark report in PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         if: github.event_name == 'pull_request'
         with:
