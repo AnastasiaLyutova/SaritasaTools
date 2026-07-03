@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System.Collections.Immutable;
+using BenchmarkDotNet.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -59,10 +60,10 @@ public class CodeAnalyzersBenchmarks
 
         // Warm up each analyzer individually to JIT-compile the single-analyzer execution path
         // in Roslyn, which differs from the multi-analyzer path used when running all at once.
-        foreach (var param in AnalyzerSource)
-        {
-            RunAnalyzer(param).GetAwaiter().GetResult();
-        }
+        //foreach (var param in AnalyzerSource)
+        //{
+            //RunAnalyzer(param).GetAwaiter().GetResult();
+        //}
     }
 
     /// <summary>
