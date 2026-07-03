@@ -72,7 +72,7 @@ jobs:
           sudo -E dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_BASELINE_REPORTS }} --test ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
       - name: 'Install PowerUtils.BenchmarkDotnet.Reporter'
-        run: dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
+        run: sudo -E dotnet tool install --global PowerUtils.BenchmarkDotnet.Reporter
 
       - name: 'Run benchmarks compare'
         run: pbreporter compare -b ${{ env.DIR_BASELINE_REPORTS }}/results -t ${{ env.DIR_TARGET_REPORTS }}/results -f markdown -tm ${{ env.THRESHOLD_MEAN }} -ta ${{ env.THRESHOLD_ALLOCATION }} -ft -fw
