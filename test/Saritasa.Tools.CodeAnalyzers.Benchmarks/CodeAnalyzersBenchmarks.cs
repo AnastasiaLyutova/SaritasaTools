@@ -1,11 +1,23 @@
-﻿using System.Collections.Immutable;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
 using Saritasa.Tools.CodeAnalyzers.Analyzers;
 
 namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
+
+/// <summary>
+/// Wraps a DiagnosticAnalyzer to provide a short display name for BenchmarkDotNet.
+/// Without this, ToString() returns the fully qualified type name, which pbreporter
+/// either truncates or omits from the comparison table.
+/// </summary>
+public class AnalyzerParam(DiagnosticAnalyzer analyzer)
+{
+    public DiagnosticAnalyzer Analyzer { get; } = analyzer;
+
+    // BenchmarkDotNet uses ToString() to build the benchmark case name, e.g. RunAnalyzer(LineLengthAnalyzer).
+    public override string ToString() => Analyzer.GetType().Name;
+}
 
 /// <summary>
 /// Benchmarks for Roslyn diagnostic analyzers.
@@ -16,17 +28,15 @@ public class CodeAnalyzersBenchmarks
 {
     private static readonly List<Compilation> compilations = new();
 
-    /// <summary>
-    /// Discovered at startup via reflection so that new analyzers are benchmarked automatically.
-    /// Using typeof(LineLengthAnalyzer) only to resolve the target assembly — no other types
-    /// are referenced directly, so this file compiles on any branch regardless of which
-    /// analyzers exist there.
-    /// </summary>
-    public static IEnumerable<DiagnosticAnalyzer> AnalyzerSource { get; } =
+    // Discovered at startup via reflection so that new analyzers are benchmarked automatically.
+    // Using typeof(LineLengthAnalyzer) only to resolve the target assembly — no other types
+    // are referenced directly, so this file compiles on any branch regardless of which
+    // analyzers exist there.
+    public static IEnumerable<AnalyzerParam> AnalyzerSource { get; } =
         typeof(LineLengthAnalyzer).Assembly
             .GetTypes()
             .Where(t => !t.IsAbstract && typeof(DiagnosticAnalyzer).IsAssignableFrom(t))
-            .Select(t => (DiagnosticAnalyzer)Activator.CreateInstance(t)!)
+            .Select(t => new AnalyzerParam((DiagnosticAnalyzer)Activator.CreateInstance(t)!))
             .ToList();
 
     static CodeAnalyzersBenchmarks()
@@ -49,10 +59,10 @@ public class CodeAnalyzersBenchmarks
 
         // Warm up each analyzer individually to JIT-compile the single-analyzer execution path
         // in Roslyn, which differs from the multi-analyzer path used when running all at once.
-        // foreach (var analyzer in AnalyzerSource)
-        // {
-           //  RunAnalyzer(analyzer).GetAwaiter().GetResult();
-       //  }
+        foreach (var param in AnalyzerSource)
+        {
+            RunAnalyzer(param).GetAwaiter().GetResult();
+        }
     }
 
     /// <summary>
@@ -61,13 +71,13 @@ public class CodeAnalyzersBenchmarks
     /// </summary>
     [Benchmark]
     [ArgumentsSource(nameof(AnalyzerSource))]
-    public async Task RunAnalyzer(DiagnosticAnalyzer analyzer)
+    public async Task RunAnalyzer(AnalyzerParam param)
     {
         foreach (var compilation in compilations)
         {
             // A new instance must be created each iteration: CompilationWithAnalyzers caches
             // results internally, so reusing it would measure cache retrieval, not actual analysis.
-            var compilationWithAnalyzers = compilation.WithAnalyzers([analyzer]);
+            var compilationWithAnalyzers = compilation.WithAnalyzers([param.Analyzer]);
             _ = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
         }
     }
