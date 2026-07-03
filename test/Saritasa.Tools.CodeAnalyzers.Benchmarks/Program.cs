@@ -16,27 +16,24 @@ namespace Saritasa.Tools.CodeAnalyzers.Benchmarks;
 /// </summary>
 internal class Program
 {
-    // Static state to temporarily hold parsed values
-    public static string File { get; private set; } = string.Empty;
-
     /// <summary>
     /// Entry point.
     /// </summary>
     public static async Task<int> Main(string[] args)
     {
-        Option<string> fileOption = new("--test")
+        var testProjectPathOption = new Option<string>("--testProjectPath")
         {
-            Description = "The file to read and display on the console"
+            Description = "Path to the test project for code analyzer benchmarks."
         };
 
         var rootCommand = new RootCommand();
-        rootCommand.Options.Add(fileOption);
+        rootCommand.Options.Add(testProjectPathOption);
         rootCommand.TreatUnmatchedTokensAsErrors = false;
 
         var parseResult = rootCommand.Parse(args);
-        if (parseResult.Errors.Count == 0 && parseResult.GetValue(fileOption) is string parsedFile)
+        if (parseResult.Errors.Count == 0 && parseResult.GetValue(testProjectPathOption) is string testProjectPath)
         {
-            File = parsedFile;
+            CodeAnalyzersBenchmarkSettings.TestProjectPath = testProjectPath;
 
             MSBuildLocator.RegisterDefaults();
 
