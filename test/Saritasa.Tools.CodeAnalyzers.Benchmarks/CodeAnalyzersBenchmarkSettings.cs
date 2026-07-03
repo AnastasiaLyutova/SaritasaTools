@@ -3,7 +3,7 @@
 /// <summary>
 /// Benchmark run settings.
 /// </summary>
-internal static class BenchmarkSettings
+internal static class CodeAnalyzersBenchmarkSettings
 {
     /// <summary>
     /// Path to the test project solution file passed via --testProjectPath argument.
