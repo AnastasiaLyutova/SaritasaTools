@@ -89,7 +89,7 @@ jobs:
       - name: Switch Saritasa.Tools.CodeAnalyzers to Base Branch
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
-          rm -rf src/Saritasa.Tools.CodeAnalyzers/
+          sudo rm -rf src/Saritasa.Tools.CodeAnalyzers/
           git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
           git status
 
