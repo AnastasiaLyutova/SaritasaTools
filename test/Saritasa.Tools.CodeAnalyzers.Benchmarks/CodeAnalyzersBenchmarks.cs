@@ -59,13 +59,6 @@ public class CodeAnalyzersBenchmarks
             }
             compilations.Add(compilation);
         }
-
-        // Warm up each analyzer individually to JIT-compile the single-analyzer execution path
-        // in Roslyn, which differs from the multi-analyzer path used when running all at once.
-        // foreach (var analyzer in analyzers)
-        // {
-        //    RunAnalyzer(analyzer).GetAwaiter().GetResult();
-        // }
     }
 
     /// <summary>

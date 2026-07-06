@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Saritasa.Tools.CodeAnalyzers.Analyzers;
 
 /// <summary>
-/// Ensures exception messages end with a dot..
+/// Ensures exception messages end with a dot.
 /// </summary>
 /// <remarks>
 /// According to
