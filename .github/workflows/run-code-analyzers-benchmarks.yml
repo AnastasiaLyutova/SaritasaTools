@@ -23,7 +23,7 @@ on:
 
     paths:
       - 'src/Saritasa.Tools.CodeAnalyzers/**'
-  
+
    # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -33,7 +33,7 @@ env:
   DIR_TARGET_REPORTS: './artifacts-target'
   PATH_REPORT_RESULT: './BenchmarkReporter/benchmark-comparison-report.md'
   TEST_PROJECT_FOLDER: './testProject'
-  PATH_TO_TEST_SOLUTION: 'src/Saritasa.SlackApp.sln'
+  PATH_TO_TEST_SOLUTION: 'src/Saritasa.NetForge.slnx'
   THRESHOLD_MEAN: 50%
   THRESHOLD_ALLOCATION: 50%
 
@@ -45,7 +45,7 @@ jobs:
       # Ensure a clean test project directory before checkout.
       - name: Clean up target directory
         run: rm -rf ${{ env.TEST_PROJECT_FOLDER }}
-   
+
       # Checkout the PR branch so we can benchmark the proposed changes.
       - name: Checkout PR Branch (Current Changes)
         uses: actions/checkout@v4
@@ -55,10 +55,9 @@ jobs:
         id: external_checkout
         uses: actions/checkout@v4
         with:
-          repository: 'AnastasiaLyutova/saritasa-crm-slack-app'
+          repository: 'saritasa-nest/saritasa-forge-admin'
           path: ${{ env.TEST_PROJECT_FOLDER }}
-          token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
-          persist-credentials: false  
+          persist-credentials: false
           ssh-strict: false
           set-safe-directory: false
           fetch-depth: 1
@@ -67,9 +66,8 @@ jobs:
       - name: Reset to specific commit
         uses: actions/checkout@v4
         with:
-            repository: 'AnastasiaLyutova/saritasa-crm-slack-app'
-            token: ${{ secrets.MY_PERSONAL_ACCESS_TOKEN }}
-            ref: 771257af493247a2d43c6cf9de21156a6ad27021
+            repository: 'saritasa-nest/saritasa-forge-admin'
+            ref: dc2d1ed5d58be20e709de5ba884beeaba0c6a733
             path: ${{ env.TEST_PROJECT_FOLDER }}
 
       - name: Setup .NET
@@ -106,7 +104,7 @@ jobs:
 
       - name: Publish benchmark report in Summary
         run: cat ${{ env.PATH_REPORT_RESULT }} > $GITHUB_STEP_SUMMARY
-      
+
       - name: Add compare benchmark report in PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         if: github.event_name == 'pull_request'
