@@ -84,9 +84,12 @@ jobs:
           sudo -E dotnet run -c Release --project ${{ env.PATH_BENCHMARKS_PROJECT }} -- --artifacts ${{ env.DIR_TARGET_REPORTS }} --testProjectPath ${{ env.TEST_PROJECT_FOLDER }}/${{ env.PATH_TO_TEST_SOLUTION }}
 
       # Swap the Saritasa.Tools.CodeAnalyzers code to the base branch while keeping the test project intact.
+      # The directory is removed first to ensure files added in the PR (not present in base) are deleted.
+      # Without this, `git checkout FETCH_HEAD -- <path>` only updates existing files and leaves new ones behind.
       - name: Switch Saritasa.Tools.CodeAnalyzers to Base Branch
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
+          rm -rf src/Saritasa.Tools.CodeAnalyzers/
           git checkout FETCH_HEAD -- src/Saritasa.Tools.CodeAnalyzers/
           git status
 

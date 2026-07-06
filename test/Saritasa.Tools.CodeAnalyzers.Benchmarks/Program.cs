@@ -2,7 +2,6 @@
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
@@ -49,7 +48,7 @@ internal class Program
                 .AddLogger(ConsoleLogger.Default)
                     .WithOption(ConfigOptions.DisableLogFile, true)
                 .AddDiagnoser(MemoryDiagnoser.Default)
-                .AddExporter(JsonExporter.BriefCompressed)
+                .AddExporter(new CodeAnalyzersBenchmarkExporter())
                 .AddColumnProvider(DefaultColumnProviders.Instance);
 
             BenchmarkRunner.Run<CodeAnalyzersBenchmarks>(config, parseResult.UnmatchedTokens.ToArray());
