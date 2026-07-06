@@ -36,7 +36,6 @@ public class CodeAnalyzersBenchmarks
         typeof(LineLengthAnalyzer).Assembly
             .GetTypes()
             .Where(t => !t.IsAbstract && typeof(DiagnosticAnalyzer).IsAssignableFrom(t))
-        .Where(t => t == typeof(LineLengthAnalyzer))
             .Select(t => new AnalyzerParam((DiagnosticAnalyzer)Activator.CreateInstance(t)!))
             .ToList();
 
@@ -44,7 +43,10 @@ public class CodeAnalyzersBenchmarks
     {
         using var workspace = MSBuildWorkspace.Create();
 
-        workspace.WorkspaceFailed += (sender, args) => Console.WriteLine($"[MSBuild] {args.Diagnostic.Message}");
+        workspace.RegisterWorkspaceFailedHandler(args =>
+        {
+            Console.WriteLine($"[MSBuild] {args.Diagnostic.Message}");
+        });
 
         var solution = workspace.OpenSolutionAsync(CodeAnalyzersBenchmarkSettings.TestProjectPath).GetAwaiter().GetResult();
 
