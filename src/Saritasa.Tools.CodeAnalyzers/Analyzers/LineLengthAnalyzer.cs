@@ -27,7 +27,7 @@ public sealed class LineLengthAnalyzer : DiagnosticAnalyzer
     /// </summary>
     private const int DefaultMaxLineLength = 130;
 
-    private static readonly LocalizableString title = "Line exceeds maximum length";
+    private static readonly LocalizableString title = "Line exceeds maximum length.";
     private static readonly LocalizableString messageFormat = "Line length is {0} characters, which exceeds the limit of {1}";
     private static readonly LocalizableString description = "Keep lines within the configured maximum length.";
 
